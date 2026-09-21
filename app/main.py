@@ -30,7 +30,10 @@ async def login(
 
 # --- ПОЛЬЗОВАТЕЛИ ---
 @app.get("/user", response_model=List[schemas.UserRead])
-async def get_all_users(session: AsyncSession = Depends(get_session)):
+async def get_all_users(
+    session: AsyncSession = Depends(get_session),
+    current_user=Depends(auth.require_user),
+):
     return await crud.get_all_users(session)
 
 
