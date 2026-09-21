@@ -14,10 +14,12 @@ ACCESS_TOKEN_EXPIRE_HOURS = 48
 
 security = HTTPBearer(auto_error=False)
 
+
 def hash_password(password: str) -> str:
     pwd_bytes = password.encode("utf-8")[:72]
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
+
 
 def verify_password(plain: str, hashed: str) -> bool:
     try:
@@ -26,11 +28,13 @@ def verify_password(plain: str, hashed: str) -> bool:
     except Exception:
         return False
 
+
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -49,10 +53,12 @@ async def get_current_user(
     result = await session.execute(select(models.User).where(models.User.id == int(user_id)))
     return result.scalar_one_or_none()
 
+
 async def require_user(current_user: models.User = Depends(get_current_user)):
     if current_user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     return current_user
+
 
 async def require_admin(current_user: models.User = Depends(require_user)):
     if current_user.role != "admin":
